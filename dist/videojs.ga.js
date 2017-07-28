@@ -112,7 +112,15 @@
         });
       } else if (window._gaq) {
         _gaq.push(['_trackEvent', eventCategory, action, eventLabel, value, nonInteraction]);
-      } else if (options.debug) {
+      } else if (typeof(__gaTracker) != 'undefined') {
+        __gaTracker('send', 'event', {
+            'eventCategory': eventCategory,
+            'eventAction': action,
+            'eventLabel': eventLabel,
+            'eventValue': value,
+            'nonInteraction': nonInteraction
+           });
+        } else if (options.debug) {
         console.log("Google Analytics not detected");
       }
     };
