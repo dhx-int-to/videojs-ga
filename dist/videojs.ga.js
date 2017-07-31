@@ -7,7 +7,7 @@
   var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   videojs.plugin('ga', function(options) {
-    var dataSetupOptions, defaultsEventsToTrack, end, error, eventCategory, eventLabel, eventsToTrack, fullscreen, loaded, parsedOptions, pause, percentsAlreadyTracked, percentsPlayedInterval, play, resize, seekEnd, seekStart, seeking, sendbeacon, timeupdate, volumeChange;
+    var dataSetupOptions, defaultsEventsToTrack, end, error, eventCategory, eventLabel, eventsToTrack, fullscreen, loaded, parsedOptions, pause, percentsAlreadyTracked, percentsPlayedInterval, play, resize, seekEnd, seekStart, seeking, sendbeacon, timeupdate, volumeChange, quartilesAlreadyTracked;
     if (options == null) {
       options = {};
     }
@@ -18,13 +18,14 @@
         dataSetupOptions = parsedOptions.ga;
       }
     }
-    defaultsEventsToTrack = ['loaded', 'percentsPlayed', 'start', 'end', 'seek', 'play', 'pause', 'resize', 'volumeChange', 'error', 'fullscreen'];
+    defaultsEventsToTrack = ['loaded', 'percentsPlayed', 'quartilesStarted', 'start', 'end', 'seek', 'play', 'pause', 'resize', 'volumeChange', 'error', 'fullscreen'];
     eventsToTrack = options.eventsToTrack || dataSetupOptions.eventsToTrack || defaultsEventsToTrack;
     percentsPlayedInterval = options.percentsPlayedInterval || dataSetupOptions.percentsPlayedInterval || 10;
     eventCategory = options.eventCategory || dataSetupOptions.eventCategory || 'Video';
     eventLabel = options.eventLabel || dataSetupOptions.eventLabel;
     options.debug = options.debug || false;
     percentsAlreadyTracked = [];
+    quartilesAlreadyTracked = [];
     seekStart = seekEnd = 0;
     seeking = false;
     loaded = function() {
@@ -51,6 +52,21 @@
             percentsAlreadyTracked.push(percent);
           }
         }
+      }
+      if( __indexOf.call(eventsToTrack,"quartilesStarted") >= 0 ) {
+          currentQuartile = "FirstQuartile";
+          
+          if( percentPlayed >= 75 )
+              currentQuartile = "FourthQuartile";
+          else if( percentPlayed >= 50 )
+              currentQuartile = "ThirdQuartile";
+          else if( percentPlayed >= 25 )
+              currentQuartile = "SecondQuartile";
+          
+          if( __indexOf.call(quartilesAlreadyTracked,currentQuartile) < 0 ) {
+              sendbeacon(currentQuartile,true);
+              quartilesAlreadyTracked.push(currentQuartile);
+          }
       }
       if (__indexOf.call(eventsToTrack, "seek") >= 0) {
         seekStart = seekEnd;
